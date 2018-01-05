@@ -1,9 +1,11 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
     <title>Node Authentication</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+	 <link rel="stylesheet" type="text/css" href="css/style.css" />
+	<script src="/wp-includes/js/addInput.js" language="Javascript" type="text/javascript"></script>
     <style>
         body         { padding-top:80px; word-wrap:break-word; }
     </style>
@@ -11,105 +13,110 @@
 <body>
 <div class="container">
 
+
     <div class="page-header text-center">
         <h1><span class="fa fa-anchor"></span> Profile Page</h1>
         <a href="/logout" class="btn btn-default btn-sm">Logout</a>
     </div>
 
-    <div class="row">
 
         <!-- LOCAL INFORMATION -->
+		  <h3><span class="fa fa-user"></span> <%= user.local.email %></h3>
+
+              
+				
+            <div class="row">
+
         <div class="col-sm-6">
-            <div class="well">
-                <h3><span class="fa fa-user"></span> Local</h3>
-
-                <% if (user.local.email) { %>
-                    <p>
-                        <strong>id</strong>: <%= user._id %><br>
-                        <strong>email</strong>: <%= user.local.email %><br>
-                        <strong>password</strong>: <%= user.local.password %>
-                    </p>
-                    
-                    <a href="/unlink/local" class="btn btn-default">Unlink</a>
-                <% } else { %>
-                    <a href="/connect/local" class="btn btn-default">Connect Local</a>
-                <% } %>
-
-            </div>
-        </div>
-
-        <!-- FACEBOOK INFORMATION -->
-        <div class="col-sm-6">
-            <div class="well">
-                <h3 class="text-primary"><span class="fa fa-facebook"></span> Facebook</h3>
-
-                <!-- check if the user has this token (is the user authenticated with this social account) -->
-                <% if (user.facebook.token) { %>
-                    <p>
-                        <strong>id</strong>: <%= user.facebook.id %><br>
-                        <strong>token</strong>: <%= user.facebook.token %><br>
-                        <strong>email</strong>: <%= user.facebook.email %><br>
-                        <strong>name</strong>: <%= user.facebook.name %><br>
-                    </p>
-
-                    <a href="/unlink/facebook" class="btn btn-primary">Unlink</a>
-                <% } else { %>
-                    <a href="/connect/facebook" class="btn btn-primary">Connect Facebook</a>
-                <% } %>
-
-            </div>
-        </div>
-    </div>
-    <div class="row">
-
-        <!-- TWITTER INFORMATION -->
-        <div class="col-sm-6">
-            <div class="well">
-                <h3 class="text-info"><span class="fa fa-twitter"></span> Twitter</h3>
-
-                <% if (user.twitter.token) { %>
-                    <p>
-                        <strong>id</strong>: <%= user.twitter.id %><br>
-                        <strong>token</strong>: <%= user.twitter.token %><br>
-                        <strong>display name</strong>: <%= user.twitter.displayName %><br>
-                        <strong>username</strong>: <%= user.twitter.username %>
-                    </p>
-
-                    <a href="/unlink/twitter" class="btn btn-info">Unlink</a>
-                <% } else { %>
-                    <a href="/connect/twitter" class="btn btn-info">Connect Twitter</a>
-                <% } %>
-
-            </div>
-        </div>
-
-        <!-- GOOGLE INFORMATION -->
-        <div class="col-sm-6">
-            <div class="well">
-                <h3 class="text-danger"><span class="fa fa-google-plus"></span> Google+</h3>
-
-                <% if (user.google.token) { %>
-                    <p>
-                        <strong>id</strong>: <%= user.google.id %><br>
-                        <strong>token</strong>: <%= user.google.token %><br>
-                        <strong>email</strong>: <%= user.google.email %><br>
-                        <strong>name</strong>: <%= user.google.name %>
-                    </p>
-
-                    <a href="/unlink/google" class="btn btn-danger">Unlink</a>
-                <% } else { %>
-                    <a href="/connect/google" class="btn btn-danger">Connect Google</a>
-                <% } %>
-
-            </div>
-        </div>
-    </div>
-
-    <div class="text-center">
-        <p>A demo by <a href="http://scotch.io">Scotch</a>.</p>
-        <p>Visit the <a href="http://scotch.io/tutorials/javascript/easy-node-authentication-setup-and-local">tutorial</a>.</p>
-    </div>
+		<div class="well">
+                                  		
+						<form action="/update" method="post">
+						<table id="inputs"><tr>
+						<td><label>btc share: </label><input type="text" name="btc_share" value=<%= user.local.btc_share %>></td>
+						<td><label>btc value: </label><input type="text" name="btc_value" value=<%= user.local.btc_value %>></td>
+						</tr>
+						<tr>
+						<td><label>eth share: </label><input type="text" name="eth_share" value=<%= user.local.eth_share %>></td>
+						<td><label>eth value: </label><input type="text" name="eth_value" value=<%= user.local.eth_value %>></td>
+						</tr>
+						<tr>
+						<td><label>ltc share:  </label><input type="text" name="ltc_share" value=<%= user.local.ltc_share %>></td>
+						<td><label>ltc value:  </label><input type="text" name="ltc_value" value=<%= user.local.ltc_value %>></td><br></br>
+						</tr>
+						</table>
+						<div id="edit">
+						<input type="submit" class="btn btn-default"" value="Update"/>
+						<a href="/unlink/local" class="btn btn-default">Unlink</a>
+						</div>
+						</form>
+						</div>
+						</div>
+					
+					
+			
+					
+					
+       <div class="col-sm-6">
+	   <div class="well">
+	   
+		<table id="report">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Ticker Price</th>
+              <th>+/-</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>BTC</td>
+              <td><%= btc_price %></td>
+              <td><%= btc_diff %></td>
+            </tr>
+            <tr>
+              <td>ETH</td>
+              <td><%= eth_price %></td>
+              <td><%= eth_diff %></td>
+            </tr>
+            <tr>
+              <td>LTC</td>
+              <td><%= ltc_price %></td>
+              <td><%= ltc_diff %></td>
+            </tr>
+			</tbody>
+			</table>
+			
+			
+			<table id="report">
+			<td><p>Total = <%= total %></p></td>
+			</table>
+			
+			</div>
+			</div>
+			
+	 
+	
 
 </div>
+</div>
+
 </body>
 </html>
+
+<!-- <script>
+	<input type="button" value="Add another text input" onClick="addInput('dynamicInput');">
+var counter = 1;
+var limit = 3;
+function addInput(divName){
+     if (counter == limit)  {
+          alert("You have reached the limit of adding " + counter + " inputs");
+     }
+     else {
+          var newdiv = document.createElement('div');
+          newdiv.innerHTML = "<br><strong>btc share</strong>: <input type='text' name='btc_share' value='<%= user.local.btc_share %>'/>" +"<strong>btc value</strong>: <input type='text' name='btc_value' value='<%= user.local.btc_value %>'/><br></br>";
+          document.getElementById(divName).appendChild(newdiv);
+          counter++;
+     }
+}
+
+</script> -->

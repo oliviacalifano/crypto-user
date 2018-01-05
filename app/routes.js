@@ -1,3 +1,6 @@
+const request = require('request');
+
+
 module.exports = function(app, passport) {
 
 // normal routes ===============================================================
@@ -9,9 +12,58 @@ module.exports = function(app, passport) {
 
     // PROFILE SECTION =========================
     app.get('/profile', isLoggedIn, function(req, res) {
-        res.render('profile.ejs', {
+        
+		  let user = req.user;
+  var options_btc = {
+  url: `https://api.gdax.com/products/BTC-USD/ticker`,
+  headers: {
+    'User-Agent': 'request'
+  }
+};
+  var options_eth = {
+  url: `https://api.gdax.com/products/ETH-USD/ticker`,
+  headers: {
+    'User-Agent': 'request'
+  }
+};
+
+  var options_ltc = {
+  url: `https://api.gdax.com/products/LTC-USD/ticker`,
+  headers: {
+    'User-Agent': 'request'
+  }
+};
+  
+  request(options_btc, function (err, response, body) {
+	  var btc = JSON.parse(body);
+	request(options_eth, function (err, response, body) {
+		var eth = JSON.parse(body);
+	request(options_ltc, function (err, response, body) {
+		var ltc = JSON.parse(body);
+
+			let weatherText = `Bitcoin's last trade price was ${btc.price}!`;
+			res.render('profile.ejs', {
+				//user: user_name, 
+				user : req.user,
+				btc_price: Math.round(btc.price * 100) / 100, 
+				eth_price: Math.round(eth.price * 100) / 100, 
+				ltc_price: Math.round(ltc.price * 100) / 100, 
+				btc_diff: Math.round((btc.price-user.local.btc_value)*user.local.btc_share)*100/100, 
+				eth_diff: Math.round((eth.price-user.local.eth_value)*user.local.eth_share)*100/100, 
+				ltc_diff: Math.round((ltc.price-user.local.ltc_value)*user.local.ltc_share)*100/100,
+				total: Math.round((btc.price-user.local.btc_value)*user.local.btc_share + (eth.price-user.local.eth_value)*user.local.eth_share + (ltc.price-user.local.ltc_value)*user.local.ltc_share)*100/100
+				//table: "A", error: null
+				});
+			})
+  });
+  });
+		
+		
+		
+/* 		
+		res.render('profile.ejs', {
             user : req.user
-        });
+        }); */
     });
 
     // LOGOUT ==============================
@@ -51,43 +103,6 @@ module.exports = function(app, passport) {
             failureFlash : true // allow flash messages
         }));
 
-    // facebook -------------------------------
-
-        // send to facebook to do the authentication
-        app.get('/auth/facebook', passport.authenticate('facebook', { scope : ['public_profile', 'email'] }));
-
-        // handle the callback after facebook has authenticated the user
-        app.get('/auth/facebook/callback',
-            passport.authenticate('facebook', {
-                successRedirect : '/profile',
-                failureRedirect : '/'
-            }));
-
-    // twitter --------------------------------
-
-        // send to twitter to do the authentication
-        app.get('/auth/twitter', passport.authenticate('twitter', { scope : 'email' }));
-
-        // handle the callback after twitter has authenticated the user
-        app.get('/auth/twitter/callback',
-            passport.authenticate('twitter', {
-                successRedirect : '/profile',
-                failureRedirect : '/'
-            }));
-
-
-    // google ---------------------------------
-
-        // send to google to do the authentication
-        app.get('/auth/google', passport.authenticate('google', { scope : ['profile', 'email'] }));
-
-        // the callback after google has authenticated the user
-        app.get('/auth/google/callback',
-            passport.authenticate('google', {
-                successRedirect : '/profile',
-                failureRedirect : '/'
-            }));
-
 // =============================================================================
 // AUTHORIZE (ALREADY LOGGED IN / CONNECTING OTHER SOCIAL ACCOUNT) =============
 // =============================================================================
@@ -102,42 +117,6 @@ module.exports = function(app, passport) {
             failureFlash : true // allow flash messages
         }));
 
-    // facebook -------------------------------
-
-        // send to facebook to do the authentication
-        app.get('/connect/facebook', passport.authorize('facebook', { scope : ['public_profile', 'email'] }));
-
-        // handle the callback after facebook has authorized the user
-        app.get('/connect/facebook/callback',
-            passport.authorize('facebook', {
-                successRedirect : '/profile',
-                failureRedirect : '/'
-            }));
-
-    // twitter --------------------------------
-
-        // send to twitter to do the authentication
-        app.get('/connect/twitter', passport.authorize('twitter', { scope : 'email' }));
-
-        // handle the callback after twitter has authorized the user
-        app.get('/connect/twitter/callback',
-            passport.authorize('twitter', {
-                successRedirect : '/profile',
-                failureRedirect : '/'
-            }));
-
-
-    // google ---------------------------------
-
-        // send to google to do the authentication
-        app.get('/connect/google', passport.authorize('google', { scope : ['profile', 'email'] }));
-
-        // the callback after google has authorized the user
-        app.get('/connect/google/callback',
-            passport.authorize('google', {
-                successRedirect : '/profile',
-                failureRedirect : '/'
-            }));
 
 // =============================================================================
 // UNLINK ACCOUNTS =============================================================
@@ -151,37 +130,96 @@ module.exports = function(app, passport) {
         var user            = req.user;
         user.local.email    = undefined;
         user.local.password = undefined;
+		user.local.btc_share = undefined;
+		user.local.btc_value = undefined;
+		
+		 // delete him
+		  user.remove(function(err) {
+			if (err) throw err;
+
+			console.log('User successfully deleted!');
+		  });
+		
         user.save(function(err) {
             res.redirect('/profile');
         });
     });
 
-    // facebook -------------------------------
-    app.get('/unlink/facebook', isLoggedIn, function(req, res) {
-        var user            = req.user;
-        user.facebook.token = undefined;
-        user.save(function(err) {
-            res.redirect('/profile');
+app.post("/update", (req, res,next) => {
+ var user            = req.user;
+ user.local.btc_share = req.body.btc_share;
+ user.local.btc_value = req.body.btc_value;
+ user.local.eth_share = req.body.eth_share;
+ user.local.eth_value = req.body.eth_value;
+ user.local.ltc_share = req.body.ltc_share;
+ user.local.ltc_value = req.body.ltc_value;
+ 
+ user.save()
+ .then(item => {
+    res.render('profile.ejs', {
+            user : req.user
         });
-    });
+		return;
+ })
+ .catch(err => {
+ res.status(400).send("unable to save to database");
+ });
+});
 
-    // twitter --------------------------------
-    app.get('/unlink/twitter', isLoggedIn, function(req, res) {
-        var user           = req.user;
-        user.twitter.token = undefined;
-        user.save(function(err) {
-            res.redirect('/profile');
-        });
-    });
+// =============================================================================
+// REPORT =============================================================
+// =============================================================================
 
-    // google ---------------------------------
-    app.get('/unlink/google', isLoggedIn, function(req, res) {
-        var user          = req.user;
-        user.google.token = undefined;
-        user.save(function(err) {
-            res.redirect('/profile');
-        });
-    });
+
+app.post('/report', function (req, res) {
+  let user = req.user;
+  var options_btc = {
+  url: `https://api.gdax.com/products/BTC-USD/ticker`,
+  headers: {
+    'User-Agent': 'request'
+  }
+};
+  var options_eth = {
+  url: `https://api.gdax.com/products/ETH-USD/ticker`,
+  headers: {
+    'User-Agent': 'request'
+  }
+};
+
+  var options_ltc = {
+  url: `https://api.gdax.com/products/LTC-USD/ticker`,
+  headers: {
+    'User-Agent': 'request'
+  }
+};
+  
+  request(options_btc, function (err, response, body) {
+	  var btc = JSON.parse(body);
+	request(options_eth, function (err, response, body) {
+		var eth = JSON.parse(body);
+	request(options_ltc, function (err, response, body) {
+		var ltc = JSON.parse(body);
+
+			let weatherText = `Bitcoin's last trade price was ${btc.price}!`;
+			res.render('report.ejs', {
+				//user: user_name, 
+				btc_price: Math.round(btc.price * 100) / 100, 
+				eth_price: Math.round(eth.price * 100) / 100, 
+				ltc_price: Math.round(ltc.price * 100) / 100, 
+				btc_diff: Math.round((btc.price-user.local.btc_value)*user.local.btc_share)*100/100, 
+				eth_diff: Math.round((eth.price-user.local.eth_value)*user.local.eth_share)*100/100, 
+				ltc_diff: Math.round((ltc.price-user.local.ltc_value)*user.local.ltc_share)*100/100,
+				total: Math.round((btc.price-user.local.btc_value)*user.local.btc_share + (eth.price-user.local.eth_value)*user.local.eth_share + (ltc.price-user.local.ltc_value)*user.local.ltc_share)*100/100
+				//table: "A", error: null
+				});
+			})
+  });
+  });
+  });
+
+
+
+
 
 
 };
